@@ -1,18 +1,61 @@
 project: custom-pcb-motor-driver
-status: reference-design-unvalidated
-supply:
-  nominal_voltage_v: [6, 12]
-  topology: battery_or_dc
-channels: 2
-motor_type: brushed_dc
-control:
-  interface: pwm_direction
-  logic_voltage: "verify against selected driver"
+design_revision: rev-a-reference
+status: engineering-reference-unvalidated
+reference_profile: hardware/reference_profiles/drv8848.yaml
+application:
+  motor_type: brushed_dc
+  channels: 2
+  supply_nominal_v: 12.0
+  supply_min_v: 6.0
+  supply_max_v: 12.6
+  pwm_target_hz: 20000
+  logic_voltage_v: 3.3
+  current_limit_a_per_channel: 0.893
+  ambient_design_max_c: 50.0
+  expected_continuous_current_a_per_channel: 0.75
+  expected_stall_current_a_per_channel: 1.8
+  simultaneous_channels: 2
+current_sense:
+  vref_source: VINT
+  vref_v: 3.3
+  resistor_ohm: 0.56
+  resistor_power_rating_w: 1.0
+  tolerance_percent: 1.0
+input_power:
+  local_ceramic_uf: 22.0
+  high_frequency_bypass_uf: 0.1
+  optional_bulk_uf: 220.0
+  capacitor_voltage_rating_v: 25.0
+  fuse_strategy: replaceable_or_resettable_application_specific
+  reverse_polarity_strategy: p_channel_or_ideal_diode_application_specific
+  transient_strategy: tvs_application_specific
+pcb:
+  layers: 2
+  copper_oz: 2.0
+  min_power_trace_width_mm: 1.5
+  thermal_vias_under_pad: 9
+  thermal_via_finished_hole_mm: 0.30
+  ground_plane: required
+  exposed_pad_copper: required
+interfaces:
+  control_header: [GND, AIN1, AIN2, BIN1, BIN2, nSLEEP, nFAULT, VREF]
+  power_input: [VM, GND]
+  motor_a: [AOUT1, AOUT2]
+  motor_b: [BOUT1, BOUT2]
 validation:
-  erc: pending_real_cad
-  drc: pending_real_cad
+  schematic_complete: false
+  footprint_verified: false
+  erc_passed: false
+  pcb_layout_complete: false
+  drc_passed: false
+  gerbers_reviewed: false
   fabricated: false
-  bench_tested: false
+  assembly_inspected: false
+  bench_powerup_passed: false
+  motor_test_passed: false
+  thermal_test_passed: false
+  stall_test_passed: false
+  emi_observed: false
 notes:
-  - Motor stall current is a required input before final driver selection.
-  - Copper and thermal design must be calculated for the chosen PCB stack-up.
+  - "Values above define the reference design target and are not measured hardware results."
+  - "Protection part numbers remain intentionally application-specific until battery chemistry, harness inductance, and motor stall behavior are known."
