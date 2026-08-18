@@ -1,0 +1,74 @@
+profile: drv8848-dual-dc
+manufacturer: Texas Instruments
+part_number: DRV8848PWPR
+family: DRV8848
+status_checked: 2026-08-18
+status: active
+source:
+  product_page: https://www.ti.com/product/DRV8848
+  datasheet: https://www.ti.com/lit/gpn/DRV8848
+  datasheet_revision: SLLSEL7B
+  datasheet_date: 2024-04
+package:
+  type: HTSSOP
+  code: PWP
+  pins: 16
+  body_mm: [5.0, 6.4]
+  exposed_pad: true
+supply:
+  operating_min_v: 4.0
+  operating_max_v: 18.0
+  absolute_max_v: 20.0
+  reference_nominal_v: 12.0
+motor:
+  bridges: 2
+  rms_current_per_bridge_a: 1.0
+  overcurrent_trip_typ_a: 2.0
+  peak_claim_note: "2 A maximum driver current per H-bridge at 12 V and TA=25 C; thermal limits apply"
+control:
+  input_max_pwm_hz: 250000
+  logic_low_max_v: 0.7
+  logic_high_min_v: 1.6
+  logic_high_max_v: 5.5
+  fault_output: open_drain
+  sleep_pin: nSLEEP
+current_regulation:
+  supported: true
+  vref_min_recommended_v: 1.0
+  vref_max_v: 3.3
+  sense_gain: 6.6
+  trip_voltage_at_3v3_v: 0.5
+  fixed_off_time_us: 20.0
+  reference_vref_v: 3.3
+  vint_min_v: 3.13
+  vint_typ_v: 3.3
+  vint_max_v: 3.47
+  reference_current_limit_a: 0.893
+  reference_sense_resistor_ohm: 0.56
+thermal:
+  theta_ja_c_per_w: 40.3
+  theta_jc_top_c_per_w: 32.7
+  theta_jb_c_per_w: 28.7
+  theta_jc_bottom_c_per_w: 4.7
+  junction_max_operating_c: 150
+  shutdown_typ_c: 160
+resistance:
+  high_side_typ_25c_ohm: 0.55
+  low_side_typ_25c_ohm: 0.35
+  high_side_typ_85c_ohm: 0.66
+  low_side_typ_85c_ohm: 0.42
+external_components:
+  vm_bypass_min_uf: 10.0
+  vm_bypass_small_uf: 0.1
+  vint_bypass_uf: 2.2
+  vint_bypass_min_rating_v: 6.3
+  nfault_pullup_min_ohm: 1000
+protection:
+  uvlo: true
+  overcurrent: true
+  thermal_shutdown: true
+  short_circuit: true
+  fault_pin: true
+notes:
+  - "Thermal metrics are package/JEDEC values, not a substitute for board-specific thermal validation."
+  - "The reference design uses 1 A RMS per bridge as the top design current; simultaneous operation still requires PCB thermal verification."
