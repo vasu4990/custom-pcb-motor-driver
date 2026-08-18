@@ -1,94 +1,171 @@
 # Custom PCB Motor Driver
 
-[![Design Checks](https://github.com/vasu4990/custom-pcb-motor-driver/actions/workflows/checks.yml/badge.svg)](https://github.com/vasu4990/custom-pcb-motor-driver/actions/workflows/checks.yml)
+[![Engineering Checks](https://github.com/vasu4990/custom-pcb-motor-driver/actions/workflows/checks.yml/badge.svg)](https://github.com/vasu4990/custom-pcb-motor-driver/actions/workflows/checks.yml)
 
-An engineering design package for a compact low-voltage dual DC-motor driver board intended for mobile robotics prototypes.
+An engineering-grade reference package for a compact **dual brushed-DC motor driver** for mobile robotics. The project now combines a concrete semiconductor profile, machine-readable electrical decisions, tolerance-aware sizing math, a schematic connectivity contract, BOM traceability, PCB/thermal rules, staged validation gates, and automated repository checks.
 
-> **Status:** design/reference package complete; the PCB itself is **not claimed as fabricated or electrically validated**. Final component values, copper widths, thermal performance, and protection behavior must be verified against the selected motor driver IC, battery, motors, and PCB stack-up before fabrication.
+> **Status:** engineering reference, **not a fabricated or bench-validated PCB**. The electrical architecture and reference calculations are defined; real CAD capture, footprint verification, ERC/DRC, fabrication and measured load/thermal results remain required before this can be called hardware-validated.
 
-## What this repository contains
+## Why this repository is different
 
-- Electrical design requirements and assumptions
-- Functional architecture and interface definition
-- Starter BOM
-- Design-value manifest
-- Current/power-loss estimation utility
-- Board-review checklist
-- Bring-up and validation procedure
-- CI checks for repository consistency and utility tests
+Instead of leaving the motor-driver IC and key values as placeholders, this repository defines a concrete **TI DRV8848** reference profile while preserving a reusable architecture. Critical assumptions live in YAML/CSV and are checked by code rather than buried only in prose.
 
-## Intended operating envelope
+The repository includes:
 
-This project targets small battery-powered robots rather than high-power motor systems. The default reference envelope is:
+- DRV8848 reference profile with datasheet provenance
+- tolerance-aware current-limit calculations
+- conduction-loss and rough thermal screening
+- traceable engineering BOM with critical-component state
+- machine-readable schematic connectivity contract
+- documented electrical interfaces and safe states
+- test-point plan for first-article validation
+- PCB layout and PowerPAD/thermal guidance
+- staged `reference` → `cad-ready` → `fab-ready` → `hardware-validated` release gates
+- BOM and netlist linters
+- generated Markdown/JSON engineering reports
+- unit-tested calculation tools and CI
+- bring-up, validation, FMEA and manufacturing-release documentation
 
-- Motor supply: 6–12 V nominal
-- Two brushed DC motor channels
-- Logic interface: 3.3 V / 5 V compatible where supported by the chosen driver
-- PWM + direction control
-- Bulk and local decoupling
-- Reverse-polarity / transient protection as design options
+## Reference design
 
-These are **design targets**, not measured specifications.
+| Item | Reference target |
+|---|---|
+| Motor driver | TI DRV8848PWPR |
+| Motor channels | 2 brushed DC |
+| Application VM | 6–12.6 V |
+| Expected continuous load | 0.75 A/channel |
+| Current regulation | 0.56 Ω sense resistor/channel, VREF = VINT |
+| Nominal modeled current limit | ~0.893 A/channel |
+| Modeled tolerance range | ~0.838–0.948 A/channel |
+| PWM target | 20 kHz |
+| VM local decoupling | 0.1 µF + 22 µF / 25 V |
+| VINT bypass | 2.2 µF |
+| Reference PCB | 2 layer, 2 oz copper, ground plane, exposed-pad thermal vias |
+
+These are **reference design targets**, not measured specifications.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    B[Battery / VM] --> P[Input protection]
-    P --> C[Bulk + local decoupling]
-    C --> H[Dual H-bridge driver]
-    MCU[MCU PWM/DIR] --> H
-    H --> M1[Motor A]
-    H --> M2[Motor B]
-    H --> F[Fault / standby signals]
-    F --> MCU
+    SRC[Battery / DC source] --> P[Protection front end]
+    P --> C[Local + bulk decoupling]
+    C --> D[DRV8848 dual H-bridge]
+    MCU[MCU] -->|AIN1/AIN2/BIN1/BIN2| D
+    MCU -->|nSLEEP| D
+    D -->|nFAULT| MCU
+    D --> A[Motor A]
+    D --> B[Motor B]
+    D --> SA[0.56 Ω sense A]
+    D --> SB[0.56 Ω sense B]
 ```
 
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/DESIGN_SPEC.md`](docs/DESIGN_SPEC.md).
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/ELECTRICAL_DESIGN.md`](docs/ELECTRICAL_DESIGN.md) and [`docs/REFERENCE_PROFILE_DRV8848.md`](docs/REFERENCE_PROFILE_DRV8848.md).
 
-## Repository layout
+## Automated engineering checks
+
+Install development dependencies and run:
+
+```bash
+python -m pip install -r requirements-dev.txt
+pytest -q
+python tools/design_check.py
+python tools/bom_lint.py
+python tools/netlist_lint.py
+python tools/generate_report.py
+python tools/release_gate.py reference
+```
+
+A `fab-ready` gate is expected to fail today:
+
+```bash
+python tools/release_gate.py fab-ready
+```
+
+That failure is intentional. It prevents the repository from silently claiming ERC, DRC or Gerber review that has not happened.
+
+## Engineering model
+
+The main sizing utility evaluates the reference YAML against the DRV8848 profile. It checks application voltage, PWM frequency, nominal and tolerance-aware current limits, sense-resistor loading, local decoupling, and a deliberately simple junction-temperature screen.
+
+The thermal result uses datasheet θJA as a **screening calculation only**. Actual junction/board temperature depends on PCB copper, exposed-pad soldering, via construction, airflow, enclosure and operating waveform, so hardware thermal testing remains mandatory.
+
+## Repository map
 
 ```text
 .
+├── .github/
+│   ├── ISSUE_TEMPLATE/
+│   ├── pull_request_template.md
+│   └── workflows/checks.yml
 ├── docs/
 │   ├── ARCHITECTURE.md
 │   ├── BRINGUP.md
 │   ├── DESIGN_REVIEW_CHECKLIST.md
-│   └── DESIGN_SPEC.md
+│   ├── DESIGN_SPEC.md
+│   ├── ELECTRICAL_DESIGN.md
+│   ├── FAILURE_MODES.md
+│   ├── MANUFACTURING_RELEASE.md
+│   ├── PCB_LAYOUT_RULES.md
+│   ├── REFERENCE_PROFILE_DRV8848.md
+│   ├── THERMAL_DESIGN.md
+│   └── VALIDATION_PLAN.md
+├── examples/
+│   └── motor_profile_small_gearmotor.yaml
 ├── hardware/
 │   ├── BOM.csv
-│   └── design_values.yaml
+│   ├── design_values.yaml
+│   ├── interfaces.csv
+│   ├── test_points.csv
+│   ├── cad/
+│   │   ├── README.md
+│   │   └── netlist_spec.yaml
+│   └── reference_profiles/drv8848.yaml
 ├── tools/
-│   └── current_estimator.py
-├── tests/
-│   └── test_current_estimator.py
-└── .github/workflows/checks.yml
+│   ├── bom_lint.py
+│   ├── current_estimator.py
+│   ├── design_check.py
+│   ├── design_model.py
+│   ├── generate_report.py
+│   ├── netlist_lint.py
+│   └── release_gate.py
+└── tests/
 ```
 
-## Quick engineering check
+## Release truth table
 
-```bash
-python tools/current_estimator.py --current 1.2 --rds-on 0.25 --channels 2
-pytest -q
-```
+| Stage | Current state |
+|---|---|
+| Engineering reference | ✅ |
+| CAD ready | ❌ — real schematic/footprint/ERC evidence missing |
+| Fabrication ready | ❌ — PCB/DRC/Gerber review missing |
+| Fabricated | ❌ |
+| Hardware validated | ❌ — no measured motor/thermal/stall data yet |
 
-The estimator is intentionally simple: it helps sanity-check conduction losses and expected heat, but it is not a replacement for the selected IC's datasheet thermal model.
+The source of truth is [`hardware/design_values.yaml`](hardware/design_values.yaml), and [`tools/release_gate.py`](tools/release_gate.py) enforces the evidence required for each stage.
 
-## Before fabrication
+## Key engineering decisions
 
-1. Select the exact motor-driver IC and package.
-2. Confirm absolute maximum and recommended operating values from its datasheet.
-3. Measure or obtain motor stall current.
-4. Size traces, connectors, vias, and copper for expected continuous and peak current.
-5. Verify decoupling placement and thermal pad/via recommendations.
-6. Run ERC/DRC in the PCB CAD tool.
-7. Review polarity, pin-1 orientation, footprints, connector order, and mounting holes.
-8. Generate Gerbers only after the design-review checklist is complete.
+**Current regulation.** The reference uses a 0.56 Ω sense resistor per channel with VREF tied to VINT. The model includes VINT and resistor tolerance rather than trusting only a nominal current-limit number.
 
-## After fabrication
+**Thermal strategy.** The exposed pad, ground plane and thermal vias are part of the electrical design, not optional cosmetics. Rough thermal math is used to catch obviously bad choices early, then real hardware measurements must replace estimates.
 
-Follow [`docs/BRINGUP.md`](docs/BRINGUP.md): resistance checks first, then current-limited power-up without motors, logic validation, one motor at low duty cycle, and finally load/thermal testing.
+**Protection stays application-specific.** Fuse, reverse-polarity device, TVS and optional bulk capacitance cannot be selected credibly without the final battery/source, cable/harness and motor transient behavior. The repo documents the architecture and review criteria instead of inventing part numbers.
+
+**CAD honesty.** The repo does not contain fake KiCad/Altium source files. [`hardware/cad/netlist_spec.yaml`](hardware/cad/netlist_spec.yaml) defines the connectivity contract for the real schematic when CAD work begins.
+
+## Before ordering a PCB
+
+Complete [`docs/DESIGN_REVIEW_CHECKLIST.md`](docs/DESIGN_REVIEW_CHECKLIST.md), create and independently verify the real CAD files, run ERC/DRC, review fabrication outputs, and satisfy the `fab-ready` gate with actual evidence.
+
+## First article
+
+Follow [`docs/BRINGUP.md`](docs/BRINGUP.md) and [`docs/VALIDATION_PLAN.md`](docs/VALIDATION_PLAN.md). Start from current-limited power with no motors, verify VINT/nFAULT/nSLEEP, test each bridge separately, verify current regulation, then move to dual-channel load and thermal testing.
+
+## Primary component sources
+
+The reference profile is derived from Texas Instruments' DRV8848 product page and datasheet. Re-check the current datasheet revision and device lifecycle before a real procurement/fabrication release.
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE). Hardware documentation is provided without warranty; verify all electrical assumptions before use.
+MIT — see [`LICENSE`](LICENSE). Hardware documentation and calculations are provided without warranty; independently verify all electrical, thermal and safety assumptions for the actual application.
