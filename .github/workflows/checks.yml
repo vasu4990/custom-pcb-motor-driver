@@ -33,6 +33,8 @@ jobs:
           PY
       - name: Run electrical and thermal screening
         run: python tools/design_check.py --output artifacts/design-check.json
+      - name: Screen example motor profile
+        run: python tools/motor_compatibility.py examples/motor_profile_small_gearmotor.yaml
       - name: Lint BOM traceability
         run: python tools/bom_lint.py
       - name: Lint requirements traceability
