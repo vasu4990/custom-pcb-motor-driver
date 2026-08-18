@@ -1,30 +1,45 @@
-# Board Bring-up Procedure
+# First-Article Bring-Up
 
-Use this only after a real PCB design has been fabricated and assembled.
+> Use a current-limited bench supply and keep motors mechanically safe. Do not begin with a battery capable of high fault current.
 
 ## 1. Unpowered inspection
 
-- Check component orientation and solder bridges.
-- Verify input polarity markings.
-- Measure resistance between VM and GND; investigate unexpectedly low resistance.
-- Confirm no short between logic supply and ground.
+- verify U1 pin-1 orientation and exposed-pad solder quality
+- inspect all connectors and polarized parts
+- verify no solder bridge at PWP pins
+- measure VM-to-GND resistance
+- measure each sense resistor
+- verify nFAULT pull-up and VREF/VINT connection
 
-## 2. Current-limited power-up
+## 2. Current-limited power-up, no motors
 
-Power the board without motors using a bench supply with a conservative current limit. Verify expected logic/driver supply rails and ensure the board does not heat unexpectedly.
+1. Set supply to the minimum intended VM and a low current limit.
+2. Keep nSLEEP low.
+3. Apply power.
+4. Check supply current for abnormal draw.
+5. Measure VINT.
+6. Confirm nFAULT is not asserted.
+7. Toggle nSLEEP and re-check fault/current.
 
-## 3. Logic test
+## 3. Logic verification
 
-With motors disconnected, toggle standby/direction/PWM inputs and verify the driver's output behavior with appropriate measurement equipment.
+With motors disconnected, exercise the control inputs and confirm startup/reset behavior never produces an unintended enabled state.
 
-## 4. Low-duty motor test
+## 4. One-motor test
 
-Connect one motor and command a low PWM duty cycle. Verify direction, current draw, and fault behavior. Repeat for the second channel.
+- connect only motor A
+- start at low PWM duty
+- observe VM, AISEN, AOUT1/AOUT2 and nFAULT
+- increase duty gradually
+- verify the configured current-chopping threshold
+- stop and inspect temperature
 
-## 5. Load and thermal validation
+Repeat for bridge B.
 
-Increase load gradually while monitoring current and temperature. Compare measured behavior with driver datasheet limits and the PCB thermal assumptions.
+## 5. Dual-channel and thermal test
 
-## Record results
+Run both channels at representative load, then toward the intended maximum operating point. Record VM, current, ambient, duration, package/board temperatures, fault events and current-limit behavior.
 
-Document supply voltage, motor model, no-load current, loaded current, peak current, ambient temperature, hottest measured component, test duration, and any fault events.
+## 6. Release evidence
+
+Put measured results in a dated validation record. Only then flip the corresponding booleans in `hardware/design_values.yaml`.
