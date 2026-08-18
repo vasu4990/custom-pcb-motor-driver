@@ -1,11 +1,14 @@
 __pycache__/
+*.py[cod]
 .pytest_cache/
-*.pyc
+.venv/
+venv/
+artifacts/
 *.log
 .DS_Store
 Thumbs.db
-# KiCad generated/backup files
+*.zip
+# CAD-generated backups / autosaves
 *-backups/
 *.lck
-*.bck
-*.kicad_prl
+~$*
