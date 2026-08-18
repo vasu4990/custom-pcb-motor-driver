@@ -1,0 +1,10 @@
+Test_Point,Net,Purpose,Required
+TP1,VM,"input rail measurement / transient observation",yes
+TP2,GND,"oscilloscope ground reference near driver",yes
+TP3,VINT,"internal regulator verification",yes
+TP4,nFAULT,"fault capture",yes
+TP5,VREF,"current-limit reference verification",yes
+TP6,AISEN,"bridge-A current-sense waveform",yes
+TP7,BISEN,"bridge-B current-sense waveform",yes
+TP8,AOUT1,"motor-A switching waveform",optional
+TP9,BOUT1,"motor-B switching waveform",optional
