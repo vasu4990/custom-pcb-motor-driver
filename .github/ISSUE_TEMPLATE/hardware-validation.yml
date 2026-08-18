@@ -1,0 +1,45 @@
+name: Hardware validation result
+description: Record first-article, motor, thermal or fault-test evidence
+title: "validation: "
+labels: []
+body:
+  - type: input
+    id: revision
+    attributes:
+      label: Board/design revision
+      placeholder: rev-a / commit SHA
+    validations:
+      required: true
+  - type: textarea
+    id: setup
+    attributes:
+      label: Test setup
+      description: Supply, current limit, motor/load, instrumentation, ambient conditions and wiring/harness.
+    validations:
+      required: true
+  - type: textarea
+    id: procedure
+    attributes:
+      label: Procedure
+      description: Exact steps used to reproduce the test.
+    validations:
+      required: true
+  - type: textarea
+    id: results
+    attributes:
+      label: Measured results
+      description: Include voltages, currents, temperatures, fault behavior and duration where relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Scope captures, photos, logs or data files. Remove secrets/personal information.
+  - type: checkboxes
+    id: truth
+    attributes:
+      label: Validation statement
+      options:
+        - label: These are measured hardware results, not simulation or estimated values.
+          required: true
