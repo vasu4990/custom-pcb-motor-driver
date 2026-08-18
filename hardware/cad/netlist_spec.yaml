@@ -1,0 +1,31 @@
+format: connectivity-contract-v1
+purpose: "Machine-readable schematic connectivity contract for CAD capture/review"
+components:
+  U1: DRV8848PWPR
+  R_SENSE_A: 0.56ohm_1W_1pct
+  R_SENSE_B: 0.56ohm_1W_1pct
+  C_VM_HF: 0.1uF_25V_X7R
+  C_VM_LOCAL: 22uF_25V_X7R
+  C_VINT: 2.2uF_6.3V_or_higher_X7R
+  R_NFAULT: 10kohm
+nets:
+  VM: {endpoints: [J1.VM, U1.VM, C_VM_HF.1, C_VM_LOCAL.1]}
+  GND: {endpoints: [J1.GND, U1.GND, U1.PPAD, C_VM_HF.2, C_VM_LOCAL.2, C_VINT.2, R_SENSE_A.2, R_SENSE_B.2, J4.GND]}
+  VINT: {endpoints: [U1.VINT, C_VINT.1]}
+  VREF: {endpoints: [U1.VREF, U1.VINT, J4.VREF]}
+  AIN1: {endpoints: [U1.AIN1, J4.AIN1]}
+  AIN2: {endpoints: [U1.AIN2, J4.AIN2]}
+  BIN1: {endpoints: [U1.BIN1, J4.BIN1]}
+  BIN2: {endpoints: [U1.BIN2, J4.BIN2]}
+  nSLEEP: {endpoints: [U1.nSLEEP, J4.nSLEEP]}
+  nFAULT: {endpoints: [U1.nFAULT, J4.nFAULT, R_NFAULT.1]}
+  VLOGIC: {endpoints: [J4.VLOGIC, R_NFAULT.2]}
+  AISEN: {endpoints: [U1.AISEN, R_SENSE_A.1]}
+  BISEN: {endpoints: [U1.BISEN, R_SENSE_B.1]}
+  AOUT1: {endpoints: [U1.AOUT1, J2.1]}
+  AOUT2: {endpoints: [U1.AOUT2, J2.2]}
+  BOUT1: {endpoints: [U1.BOUT1, J3.1]}
+  BOUT2: {endpoints: [U1.BOUT2, J3.2]}
+notes:
+  - "Protection network is intentionally represented as a front-end block until application-specific fuse, reverse-polarity, and TVS parts are selected."
+  - "CAD implementation must preserve PowerPAD-to-ground copper and thermal-via requirements."
