@@ -1,70 +1,52 @@
-# Electrical Design Specification
+# Design Specification
 
-## Intended use
+## Purpose
 
-Dual brushed-DC motor control for small educational/mobile robots. Exact ratings remain TBD until the target motor and battery are measured.
+Compact dual brushed-DC motor driver for educational/mobile robotics prototypes.
 
-## Interfaces
+## Reference requirements
 
-### Power
-- `VM`: motor supply input
-- `VLOGIC`: logic supply if required by selected H-bridge
-- `GND`: common logic and motor return
+| Requirement | Target |
+|---|---|
+| VM nominal range | 6–12 V |
+| Motor channels | 2 |
+| Control | PWM + direction |
+| Logic | 3.3 V / 5 V where driver supports it |
+| Continuous current | determined by selected IC + PCB thermal design |
+| Peak/stall current | must be below driver, connector, and copper limits |
+| Fault handling | expose fault/standby pins when available |
 
-### Control
-- `PWMA`, `AIN1`, `AIN2`
-- `PWMB`, `BIN1`, `BIN2`
-- `STBY/EN` where supported
+## Required design decisions before CAD release
 
-### Outputs
-- `A01`, `A02` → Motor A
-- `B01`, `B02` → Motor B
+- Exact driver IC and package
+- Motor connector type/current rating
+- Input connector type/current rating
+- Reverse-polarity strategy
+- TVS/fuse/PTC strategy
+- Bulk capacitance value and voltage rating
+- Copper thickness and trace/via current calculations
+- Thermal pad/via layout
+- Mounting-hole size and board outline
 
-## Protection targets
+## Interface naming
 
-- Reverse-polarity protection at battery input
-- Bulk electrolytic capacitor close to driver power entry
-- 100 nF local ceramic decoupling at IC supply pins
-- Optional TVS footprint selected for actual battery voltage
-- Optional fuse / resettable fuse footprint
-- Flyback handling according to the chosen H-bridge datasheet
+Recommended control header:
 
-## PCB layout rules
+```text
+GND
+VLOGIC (only if required by selected driver)
+AIN1
+AIN2
+PWMA
+BIN1
+BIN2
+PWMB
+STBY
+FAULT (if available)
+```
 
-1. Keep the motor-current loop compact.
-2. Use wide copper pours/traces for `VM`, motor outputs, and power ground.
-3. Do not route sensitive logic traces through high-current switching loops.
-4. Place decoupling components before routing signal traces.
-5. Use thermal vias/large copper where the driver package exposes a thermal pad.
-6. Place connectors at board edges and label polarity visibly.
-7. Add test points for `VM`, logic rail, `GND`, and both motor channels.
+Pin names should match the chosen IC or be mapped clearly in the schematic.
 
-## Required calculations before fabrication
+## Acceptance criteria for a future hardware release
 
-- Motor stall current at min/max battery voltage
-- Driver conduction loss estimate
-- PCB trace/copper temperature-rise estimate
-- Bulk-capacitance sizing for allowable supply droop
-- TVS working/standoff voltage selection if used
-- Connector and fuse current ratings
-
-## Bring-up sequence
-
-1. Inspect for shorts and polarity errors without power.
-2. Power from a current-limited bench supply with motors disconnected.
-3. Verify logic and motor rails.
-4. Exercise one bridge output at low current.
-5. Attach one unloaded motor.
-6. Test both directions and PWM.
-7. Repeat for second channel.
-8. Increase load gradually while monitoring current and temperature.
-
-## Evidence to add after hardware testing
-
-- Schematic PDF
-- PCB screenshots / renders
-- Gerbers and fabrication revision
-- Scope traces during start/reversal
-- Thermal measurements
-- Final verified BOM
-- Known limitations and maximum tested operating point
+A release may be marked `hardware-validated` only after: ERC/DRC passes, assembly inspection, current-limited first power-up, logic tests, motor tests, stall/peak-current review, and a documented thermal/load test.

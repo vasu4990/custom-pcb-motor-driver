@@ -1,0 +1,11 @@
+__pycache__/
+.pytest_cache/
+*.pyc
+*.log
+.DS_Store
+Thumbs.db
+# KiCad generated/backup files
+*-backups/
+*.lck
+*.bck
+*.kicad_prl

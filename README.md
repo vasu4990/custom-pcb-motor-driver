@@ -1,63 +1,94 @@
 # Custom PCB Motor Driver
 
-Engineering documentation and starter design package for a compact dual-channel DC motor driver PCB intended for small robotics projects.
+[![Design Checks](https://github.com/vasu4990/custom-pcb-motor-driver/actions/workflows/checks.yml/badge.svg)](https://github.com/vasu4990/custom-pcb-motor-driver/actions/workflows/checks.yml)
 
-> **Status:** design specification / PCB-development scaffold. This repository does **not** claim a fabricated or electrically validated PCB yet. Final component values, copper widths, thermal performance, and protection choices must be verified against the selected motor, battery, and H-bridge IC.
+An engineering design package for a compact low-voltage dual DC-motor driver board intended for mobile robotics prototypes.
 
-## Design target
+> **Status:** design/reference package complete; the PCB itself is **not claimed as fabricated or electrically validated**. Final component values, copper widths, thermal performance, and protection behavior must be verified against the selected motor driver IC, battery, motors, and PCB stack-up before fabrication.
 
-A reusable two-motor driver board with:
+## What this repository contains
 
-- Two bidirectional brushed-DC motor channels
-- Logic-level PWM + direction control from a microcontroller
-- Separate motor and logic power domains with common ground
-- Reverse-polarity and transient-protection provisions
-- Bulk + local decoupling
-- Test points for supply, logic rail, and motor outputs
-- Clear connectors for battery, motors, and MCU signals
+- Electrical design requirements and assumptions
+- Functional architecture and interface definition
+- Starter BOM
+- Design-value manifest
+- Current/power-loss estimation utility
+- Board-review checklist
+- Bring-up and validation procedure
+- CI checks for repository consistency and utility tests
 
-## Recommended architecture
+## Intended operating envelope
 
-```text
-Battery input
-   |
-Protection + bulk capacitance
-   |
-Dual H-bridge IC ---- Motor A
-   |                 Motor B
-   |
-MCU header: PWMA/PWMB + direction + STBY + GND
+This project targets small battery-powered robots rather than high-power motor systems. The default reference envelope is:
+
+- Motor supply: 6–12 V nominal
+- Two brushed DC motor channels
+- Logic interface: 3.3 V / 5 V compatible where supported by the chosen driver
+- PWM + direction control
+- Bulk and local decoupling
+- Reverse-polarity / transient protection as design options
+
+These are **design targets**, not measured specifications.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    B[Battery / VM] --> P[Input protection]
+    P --> C[Bulk + local decoupling]
+    C --> H[Dual H-bridge driver]
+    MCU[MCU PWM/DIR] --> H
+    H --> M1[Motor A]
+    H --> M2[Motor B]
+    H --> F[Fault / standby signals]
+    F --> MCU
 ```
 
-For a small robot, a TB6612FNG-class device is a practical starting point. If your motors have higher stall current, select a driver based on **stall current**, not free-running current.
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/DESIGN_SPEC.md`](docs/DESIGN_SPEC.md).
 
 ## Repository layout
 
-- `docs/DESIGN_SPEC.md` — electrical requirements and review checklist
-- `hardware/BOM.csv` — starter bill of materials
-- Future: KiCad schematic / PCB files, Gerbers, fabrication notes, measurements
+```text
+.
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── BRINGUP.md
+│   ├── DESIGN_REVIEW_CHECKLIST.md
+│   └── DESIGN_SPEC.md
+├── hardware/
+│   ├── BOM.csv
+│   └── design_values.yaml
+├── tools/
+│   └── current_estimator.py
+├── tests/
+│   └── test_current_estimator.py
+└── .github/workflows/checks.yml
+```
 
-## Before routing a PCB
+## Quick engineering check
 
-1. Measure motor stall current at the intended battery voltage.
-2. Select an H-bridge with adequate continuous and peak current margin.
-3. Confirm input-voltage limits under charger and regenerative conditions.
-4. Size copper for current and temperature rise.
-5. Put ceramic decoupling directly at IC supply pins.
-6. Keep high-current motor loops short and away from logic traces.
-7. Provide a low-impedance ground return.
-8. Verify thermal dissipation using the package and PCB copper area.
+```bash
+python tools/current_estimator.py --current 1.2 --rds-on 0.25 --channels 2
+pytest -q
+```
 
-## Validation plan
+The estimator is intentionally simple: it helps sanity-check conduction losses and expected heat, but it is not a replacement for the selected IC's datasheet thermal model.
 
-When hardware exists, record:
+## Before fabrication
 
-- No-load current
-- Stall / peak-current behavior
-- H-bridge package temperature under representative load
-- Supply ripple at motor start/reversal
-- Logic noise / resets during switching
-- PWM-frequency behavior
-- Reverse-polarity and brownout behavior
+1. Select the exact motor-driver IC and package.
+2. Confirm absolute maximum and recommended operating values from its datasheet.
+3. Measure or obtain motor stall current.
+4. Size traces, connectors, vias, and copper for expected continuous and peak current.
+5. Verify decoupling placement and thermal pad/via recommendations.
+6. Run ERC/DRC in the PCB CAD tool.
+7. Review polarity, pin-1 orientation, footprints, connector order, and mounting holes.
+8. Generate Gerbers only after the design-review checklist is complete.
 
-Adding oscilloscope captures and thermal images later will make this repository much stronger than simply uploading Gerbers.
+## After fabrication
+
+Follow [`docs/BRINGUP.md`](docs/BRINGUP.md): resistance checks first, then current-limited power-up without motors, logic validation, one motor at low duty cycle, and finally load/thermal testing.
+
+## License
+
+MIT — see [`LICENSE`](LICENSE). Hardware documentation is provided without warranty; verify all electrical assumptions before use.
