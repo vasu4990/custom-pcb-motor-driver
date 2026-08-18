@@ -1,0 +1,18 @@
+ID,Category,Requirement,Verification,Status,Evidence
+REQ-PWR-001,Power,"Application VM shall remain within 6.0-12.6 V",Automated design check,verified-by-model,tools/design_check.py
+REQ-PWR-002,Power,"Local VM decoupling shall meet or exceed DRV8848 datasheet minimum",Automated design check,verified-by-model,tools/design_check.py
+REQ-CTRL-001,Control,"nSLEEP shall provide a system-level disabled state during controller startup",Schematic review + hardware reset test,planned,docs/VALIDATION_PLAN.md
+REQ-CTRL-002,Control,"nFAULT shall be exposed to the controller and a test point",Connectivity review,verified-by-contract,hardware/cad/netlist_spec.yaml
+REQ-CUR-001,Current,"Nominal chopping current shall remain below 1 A per bridge",Automated design check,verified-by-model,tools/design_check.py
+REQ-CUR-002,Current,"Worst-case modeled current limit including VINT and resistor tolerance shall remain below 1 A",Automated design check,verified-by-model,tools/design_check.py
+REQ-CUR-003,Current,"Each current-sense resistor shall be rated with <=50% nominal power utilization at configured limit",Automated design check,verified-by-model,tools/design_check.py
+REQ-THM-001,Thermal,"PowerPAD shall connect to ground copper with thermal-via strategy",CAD review + assembly inspection,planned,docs/PCB_LAYOUT_RULES.md
+REQ-THM-002,Thermal,"Dual-channel maximum intended operating condition shall be thermally validated on hardware",Measured load/thermal test,planned,docs/VALIDATION_PLAN.md
+REQ-PCB-001,PCB,"High-current VM/output/sense loops shall follow documented placement rules",PCB design review,planned,docs/PCB_LAYOUT_RULES.md
+REQ-PCB-002,PCB,"Required validation test points shall be accessible",CAD/assembly inspection,planned,hardware/test_points.csv
+REQ-PROT-001,Protection,"Input overcurrent protection shall be selected for the final source and harness",Application design review,planned,docs/ELECTRICAL_DESIGN.md
+REQ-PROT-002,Protection,"Reverse-polarity protection shall be selected for the final source",Application design review,planned,docs/ELECTRICAL_DESIGN.md
+REQ-PROT-003,Protection,"Transient suppression shall be selected from real source/harness transient behavior",Measured transient review,planned,docs/VALIDATION_PLAN.md
+REQ-MFG-001,Manufacturing,"ERC and DRC shall pass or every waiver shall be documented before fabrication release",Release gate,planned,tools/release_gate.py
+REQ-MFG-002,Manufacturing,"Gerber/drill outputs shall receive visual CAM review before order",Release gate + checklist,planned,docs/MANUFACTURING_RELEASE.md
+REQ-VAL-001,Validation,"No hardware-validated claim shall be made before fabrication, inspection, power-up, motor, thermal and stall evidence exists",Release gate,verified-by-policy,tools/release_gate.py
