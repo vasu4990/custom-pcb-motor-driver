@@ -35,6 +35,8 @@ jobs:
         run: python tools/design_check.py --output artifacts/design-check.json
       - name: Lint BOM traceability
         run: python tools/bom_lint.py
+      - name: Lint requirements traceability
+        run: python tools/requirements_lint.py
       - name: Lint schematic connectivity contract
         run: python tools/netlist_lint.py
       - name: Generate engineering report
