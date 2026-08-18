@@ -1,18 +1,29 @@
-# Electrical Architecture
+# Architecture
 
-## Functional blocks
+```mermaid
+flowchart LR
+  BAT[6-12.6 V source] --> PROT[Protection front end]
+  PROT --> DC[Local + bulk decoupling]
+  DC --> U1[DRV8848 dual H-bridge]
+  MCU[MCU] -->|AIN1/AIN2/BIN1/BIN2| U1
+  MCU -->|nSLEEP| U1
+  U1 -->|nFAULT| MCU
+  U1 --> MA[Motor A]
+  U1 --> MB[Motor B]
+  U1 --> RSA[0.56R sense A]
+  U1 --> RSB[0.56R sense B]
+  RSA --> GND[Power ground / exposed pad]
+  RSB --> GND
+```
 
-1. **Power input** — battery or DC supply enters through a keyed/polarized connector.
-2. **Protection** — optional fuse/PTC, reverse-polarity protection, and transient suppression appropriate to the application.
-3. **Energy storage** — bulk capacitance near VM plus high-frequency ceramic decoupling at the driver.
-4. **Motor driver** — dual H-bridge IC with PWM/direction inputs and any available standby/fault outputs.
-5. **Logic interface** — clearly labeled MCU pins with a shared ground and voltage compatibility confirmed from the datasheet.
-6. **Outputs** — two motor connectors with unambiguous channel/polarity labels.
+## Layers of responsibility
 
-## Grounding and current paths
+**Source/protection:** connector, fuse, polarity protection, transient clamp and optional input bulk capacitor.
 
-High-current motor return paths should be short and wide and should not force switching current through sensitive logic-ground paths. Keep decoupling loops compact and follow the driver's recommended layout, especially for exposed thermal pads.
+**Power stage:** DRV8848, local VM decoupling, VINT bypass, exposed pad/thermal copper, motor connectors and sense resistors.
 
-## Design philosophy
+**Control:** four bridge inputs, nSLEEP, nFAULT and VREF.
 
-This repository separates **requirements** from **implementation**. Until exact CAD files and a chosen driver part are committed, the package is a reference design specification rather than a fabricated PCB release.
+**Verification:** machine-readable netlist contract, test points, calculation scripts, BOM linter, release-state gate and documented first-article test sequence.
+
+The design intentionally keeps source-specific protection separate from the core driver because a bench supply, 2S/3S battery and long robot harness can require materially different surge and fuse decisions.
